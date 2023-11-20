@@ -1,12 +1,13 @@
-import express, { response } from 'express';
-import OpenAI from 'openai';
-import ytdl from 'ytdl-core';
-import fs, { unlink } from 'fs';
-import { v4 as uuidv4 } from 'uuid';
-import mysql from 'mysql';
-import crypto from 'crypto';
-import axios from 'axios';
-import { configDotenv } from 'dotenv';
+const express = require('express');
+const OpenAI = require('openai');
+const ytdl = require('ytdl-core');
+const fs = require('fs');
+const { unlink } = require('fs');
+const { v4: uuidv4 } = require('uuid');
+const mysql = require('mysql');
+const crypto = require('crypto');
+const axios = require('axios');
+const { configDotenv } = require('dotenv');
 configDotenv();
 
 const app = express();
@@ -57,7 +58,6 @@ app.post('/api/generate/topic', async (req, res) => {
         });
 
         let subtopics = JSON.parse(chatCompletion.choices[0].message.content);
-        console.log(subtopics);
         conn.getConnection(function (err, connection) {
             if (err) throw err;
             connection.query("INSERT INTO topics (topic, user_id) VALUES (?, ?)", [topic, user.id], function (err, result, fields) {
@@ -67,10 +67,10 @@ app.post('/api/generate/topic', async (req, res) => {
                 subtopics.forEach(async (subtopic) => {
                     // check if index 0 then set is_locked to false
                     if (subtopics.indexOf(subtopic) == 0) {
-                        connection.query("INSERT INTO subtopics (subtopic, link_reference, topic_id, is_locked, created_at) VALUES (?, ?, ?, ?, ?)", [subtopic, link, result.insertId, false, new Date()]);
+                        connection.query("INSERT INTO subtopics (subtopic, topic_id, is_locked, created_at) VALUES (?, ?, ?, ?, ?)", [subtopic, result.insertId, false, new Date()]);
                         return;
                     }
-                    connection.query("INSERT INTO subtopics (subtopic, link_reference, topic_id, created_at) VALUES (?, ?, ?, ?)", [subtopic, link, result.insertId, new Date()]);
+                    connection.query("INSERT INTO subtopics (subtopic, topic_id, created_at) VALUES (?, ?, ?)", [subtopic, result.insertId, new Date()]);
                 });
             });
             connection.release();
@@ -114,6 +114,8 @@ app.post('/api/generate/detail/:subtopic_id', async (req, res) => {
             });
         }
         // get youtube video based on subtopic using youtube api
+        // url encode 
+        subtopic = encodeURIComponent(subtopic);
         let url = await axios.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${subtopic}&videoDuration=medium&type=video&key=${process.env.YOUTUBE_API_KEY}`);
         let video_id = url.data.items[0].id.videoId;
         let video_url = `https://www.youtube.com/watch?v=${video_id}`;
@@ -123,8 +125,6 @@ app.post('/api/generate/detail/:subtopic_id', async (req, res) => {
             });
             connection.release();
         });
-
-
 
         let videoName = uuidv4() + '.webm';
         // get youtube video and convert to mp3

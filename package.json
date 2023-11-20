@@ -1,12 +1,11 @@
 {
   "name": "stadiumz-generative-api",
   "module": "index.js",
-  "type": "module",
   "devDependencies": {
     "bun-types": "latest"
   },
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
