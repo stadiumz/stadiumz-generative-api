@@ -11,6 +11,7 @@ const { configDotenv } = require('dotenv');
 configDotenv();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -215,6 +216,6 @@ function decryptToken(token, res) {
 
 
 
-app.listen(3000, () => {
-    console.log('Server listening on port http://localhost:3000');
+app.listen(PORT, () => {
+    console.log(`Server listening on port http://localhost:${PORT}`);
 });

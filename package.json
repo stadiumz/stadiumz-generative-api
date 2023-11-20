@@ -2,6 +2,7 @@
   "name": "stadiumz-generative-api",
   "module": "index.js",
   "devDependencies": {
+    "@flydotio/dockerfile": "latest",
     "bun-types": "latest"
   },
   "scripts": {
